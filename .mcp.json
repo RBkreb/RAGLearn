@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    
+    "llama-index-docs": {
+      "type": "http",
+      "url": "https://developers.llamaindex.ai/mcp"
+    },
+    "langchain": {
+      "type":"http",
+      "url":"https://docs.langchain.com/mcp"
+    }
+  }
+}

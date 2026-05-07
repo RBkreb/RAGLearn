@@ -11,6 +11,7 @@
 
 - **LangChain Memory**：使用 `ChatMessageHistory` 实现短时对话记忆
 - **本地 LLM**：使用 OpenAI 兼容接口的本地模型（如 LM Studio / Ollama）
+- **RAG 检索**：基于 ChromaDB 的向量检索，支持文档知识库问答
 - **配置灵活**：通过 `config.py` 自定义默认行为和 LLM 参数
 
 ## 系统要求
@@ -98,13 +99,23 @@ E:\Uagent\
 │   ├── router.py          # 前缀路由解析
 │   ├── memory_manager.py   # 对话记忆管理
 │   ├── llm_service.py     # LLM 调用服务
-│   └── chain.py            # 主链编排
+│   ├── chain.py            # 主链编排
+│   ├── pipeline/           # RAG 管道
+│   │   ├── document_loader.py
+│   │   ├── text_chunker.py
+│   │   ├── embedding_service.py
+│   │   ├── vector_store.py
+│   │   └── run_pipeline.py
+│   └── tools/
+│       ├── rag_tool.py    # RAG 检索工具
+│       └── math_tools.py
 ├── examples/
 │   └── demo.py            # 交互式演示
 ├── test/
 │   └── unit/              # 单元测试
 ├── model/                  # LLM 模型文件
 ├── chroma_db/            # 向量数据库
+├── embed_demo.py         # RAG 管道演示
 └── README.md
 ```
 

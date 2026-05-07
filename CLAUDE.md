@@ -6,8 +6,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Q&A bot built with LangChain and OpenAI-compatible interface. Supports prefix routing and conversation memory for answering user questions via local LLMs.
 
-**LLM**: OpenAI-compatible API at `http://127.0.0.1:1234` (e.g., LM Studio / Ollama with API compatibility)
-**Vector Store**: ChromaDB (persisted at `./chroma_db`)
+## RAG Pipeline
+
+Standalone RAG pipeline for document embedding and retrieval:
+
+- **Embedding Model**: llama-cpp-python with GGUF models (`model/Qwen3-Embedding-4B-GGUF/`)
+- **Vector Store**: ChromaDB (persisted at `./chroma_db`)
+- **Pipeline**: `src/pipeline/` - `document_loader.py`, `text_chunker.py`, `embedding_service.py`, `vector_store.py`, `run_pipeline.py`
+- **Demo**: `embed_demo.py` - Ingest documents with `--force` or `--skip` flags
+- **RAG Tool**: `src/tools/rag_tool.py` - `rag_retrieve` tool for LLM agent
+
+**Data Flow**: Input docs → DocumentLoader → TextChunker → EmbeddingService → VectorStoreManager (ChromaDB) → RAGTool → Answer
+
+## Prerequisites
+
+- Local LLM service running at `http://127.0.0.1:1234` (OpenAI-compatible)
+- Chat model using `langchain_openai.ChatOpenAI`
+- llama-cpp-python with GGUF embedding model
 
 ## Common Commands
 

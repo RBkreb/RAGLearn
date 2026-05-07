@@ -98,7 +98,15 @@
       "Bash(./venv/Scripts/python.exe -m pytest test/unit/test_config.py test/unit/test_pipeline.py -v)",
       "Bash(./venv/Scripts/python.exe -m pytest test/unit/test_config.py test/unit/test_pipeline.py test/unit/test_llm.py test/unit/test_embedding.py -v)",
       "Bash(E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/test_llm.py -v)",
-      "Bash(E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/test_pipeline.py test/unit/test_llm.py -v)"
+      "Bash(E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/test_pipeline.py test/unit/test_llm.py -v)",
+      "Bash(find /e/Uagent/src -type f -name *.py)",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/ --cov=src --cov-report=term-missing)",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -c \"from src.tools import add, subtract, multiply, divide; print\\('Tools OK'\\)\")",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -c \"from src.config import get_config; c = get_config\\(\\); print\\('Agent config:', c.agent.system_prompt[:50]\\)\")",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -c \"from langchain.agents import create_agent; print\\('create_agent OK'\\)\")",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -c \"from src import QAChain; print\\('QAChain OK'\\)\")",
+      "Bash(E:/Uagent/venv/Scripts/python.exe -m pytest E:/Uagent/test/unit/test_chain.py E:/Uagent/test/unit/test_memory_manager.py -v)",
+      "Bash(E:/Uagent/venv/Scripts/python.exe embed_demo.py --force)"
     ]
   },
   "enableAllProjectMcpServers": true,

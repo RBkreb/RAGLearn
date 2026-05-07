@@ -1,0 +1,1 @@
+- [RAG pipeline test patterns](test_patterns_rag_pipeline.md) — Test patterns for pipeline modules, mocking strategies, coverage results

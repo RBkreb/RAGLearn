@@ -1,58 +1,121 @@
-"""Configuration dataclasses for RAG Q&A bot."""
+"""Configuration management for Q&A system."""
 
-from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Literal
 
-
-@dataclass
-class LlamaCppConfig:
-    """Configuration for LlamaCpp LLM and embedding models."""
-
-    model_path: str = "./model/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-Q8_0.gguf"
-    embedding_model_path: str = "./model/Qwen3-Embedding-4B-GGUF/Qwen3-Embedding-4B-Q4_K_M.gguf"
-    temperature: float = 0.15
-    n_gpu_layers: int = -1
-    n_ctx: int = 8192
-    max_tokens: int = 2048
-    timeout: int = 120
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class IndexConfig:
-    """Configuration for document indexing."""
+class DefaultModeConfig(BaseModel):
+    """Default mode configuration.
 
-    chunk_size: int = 600
-    chunk_overlap: int = 60
-    persist_directory: str = "./chroma_db"
+    Attributes:
+        mode: Default routing mode - "base" or "direct". Currently only "direct" is used.
+        temperature: LLM sampling temperature.
+        max_tokens: Maximum tokens to generate.
+    """
 
-
-DEFAULT_PROMPT_TEMPLATE = """
-
-Context:
-{context}
-
-Question: {question}
-
-回答规则
-- 不要复述或评价参考资料中不存在的内容
-- 回答要简洁、直接
-
-"""
+    mode: Literal["base", "direct"] = Field(default="direct")
+    temperature: float = Field(default=0.7)
+    max_tokens: int = Field(default=1024)
 
 
-@dataclass
-class PromptConfig:
-    """Configuration for RAG prompt templates."""
+class LLMConfig(BaseModel):
+    """LLM configuration for ChatOpenAI (compatible with local LLM servers).
 
-    template: str = DEFAULT_PROMPT_TEMPLATE
-    system_prompt: str = '''你是一个严格的助手。只使用用户提供的参考资料回答问题,不编造、不联想。信息不足时只回复:无法确定。'''
+    Attributes:
+        model: Model name (e.g., "qwen3.5").
+        temperature: Sampling temperature.
+        max_tokens: Maximum tokens to generate.
+        base_url: Base URL of the LLM server.
+        api_key: API key for authentication (default: "no-key").
+    """
+
+    model: str = Field(default="qwen3.5")
+    temperature: float = Field(default=0.7)
+    max_tokens: int = Field(default=1024)
+    base_url: str = Field(default="http://127.0.0.1:1234/v1")
+    api_key: str = Field(default="no-key")
 
 
-@dataclass
-class RAGConfig:
-    """Configuration for RAG pipeline."""
+class AgentConfig(BaseModel):
+    """Agent configuration for tool-enabled LLM.
 
-    llamacpp: LlamaCppConfig = field(default_factory=LlamaCppConfig)
-    index: IndexConfig = field(default_factory=IndexConfig)
-    prompt: PromptConfig = field(default_factory=PromptConfig)
-    top_k: int = 3
-    enable_graph: bool = False
+    Attributes:
+        system_prompt: System prompt for the agent with math tools.
+        tools: List of tool names to bind to the agent.
+    """
+
+    system_prompt: str = Field(
+        default="""你是一个知识问答助手。
+当用户询问关于文档、规范、定义、规格等具体信息时，必须使用 rag_retrieve 工具从知识库检索相关信息。
+支持的检索：搜索文档知识库获取相关背景信息。
+优先使用 rag_retrieve 回答涉及知识、概念、定义的问题。"""
+    )
+    tools: list[str] = Field(
+        #default=["rag_retrieve", "add", "subtract", "multiply", "divide"],
+        default=["rag_retrieve"],
+        description="List of tool names to bind to the agent",
+    )
+
+
+class PipelineConfig(BaseModel):
+    """Pipeline configuration for RAG ingestion.
+
+    Attributes:
+        input_dir: Directory containing input documents.
+        chroma_db_path: Path for ChromaDB persistence.
+        embedding_model_path: Path to GGUF embedding model.
+        chunk_size: Maximum characters per chunk.
+        chunk_overlap: Overlapping characters between chunks.
+        top_k: Number of documents to retrieve.
+        embedding_n_ctx: Context size for embedding model.
+        embedding_n_threads: Number of threads for inference.
+        embedding_n_batch: Batch size for embedding inference.
+        collection_name: ChromaDB collection name.
+    """
+
+    input_dir: Path = Field(default=Path("input"))
+    chroma_db_path: str = Field(default="./chroma_db")
+    embedding_model_path: str = Field(
+        default="model/Qwen3-Embedding-4B-GGUF/Qwen3-Embedding-4B-Q4_K_M.gguf"
+    )
+    chunk_size: int = Field(default=600)
+    chunk_overlap: int = Field(default=50)
+    top_k: int = Field(default=4)
+    embedding_n_ctx: int = Field(default=8192)
+    embedding_n_threads: int = Field(default=4)
+    embedding_n_batch: int = Field(default=1)
+    collection_name: str = Field(default="documents")
+
+
+class Config(BaseModel):
+    """Global configuration container.
+
+    Attributes:
+        default_mode: Default behavior for queries without prefix.
+        llm: LLM configuration.
+        agent: Agent configuration for tool-enabled LLM.
+        pipeline: Pipeline configuration for RAG ingestion.
+    """
+
+    default_mode: DefaultModeConfig = Field(default_factory=DefaultModeConfig)
+    llm: LLMConfig = Field(default_factory=LLMConfig)
+    agent: AgentConfig = Field(default_factory=AgentConfig)
+    pipeline: PipelineConfig = Field(default_factory=PipelineConfig)
+
+
+# Global configuration instance
+_config: Config | None = None
+
+
+def get_config() -> Config:
+    """Get global configuration instance.
+
+    Returns:
+        Global Config instance.
+    """
+    global _config
+    if _config is None:
+        _config = Config()
+    return _config

@@ -20,19 +20,9 @@
 - 本地 LLM 服务运行于 `http://127.0.0.1:1234`
 - 模型已加载（兼容 OpenAI API 格式）
 
-## 安装
 
-1. 激活虚拟环境：
-   ```bash
-   E:/Uagent/venv/Scripts/python.exe
-   ```
 
-2. 安装依赖：
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. 确保本地 LLM 服务运行中
+1. 确保本地 LLM 服务运行中
 
 ## 使用方法
 
@@ -143,6 +133,3 @@ python -m pytest test/unit/ --cov=src --cov-report=term-missing
 | `llm_service.py` | `LLMService` 调用 `ChatOpenAI`（OpenAI 兼容接口） |
 | `chain.py` | `QAChain` 编排路由、记忆、LLM |
 
-## License
-
-MIT

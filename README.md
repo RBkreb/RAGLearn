@@ -1,90 +1,137 @@
-# RAG Q&A Bot
+# Q&A 问答系统
 
-基于 LangChain  的 RAG (检索增强生成) 问答机器人。
+基于 LangChain 和 OpenAI 兼容接口的本地问答系统，支持前缀路由和对话记忆。
 
 ## 功能特性
 
-- **文档索引**: 支持 MD 文档解析和分块
-- **向量检索**: ChromaDB 持久化存储
-- **混合检索**: 基于语义相似度的文档检索
-- **流式批处理**: 内存优化的批量索引
-- **内存监控**: 内置内存泄漏检测
+- **前缀路由**：通过前缀决定回答模式
+  - `/btw` - 直接回答，无记忆
+  - `/base` - 基于上下文回答，保留对话历史
+  - 无前缀 - 使用配置文件中的默认行为
+
+- **LangChain Memory**：使用 `ChatMessageHistory` 实现短时对话记忆
+- **本地 LLM**：使用 OpenAI 兼容接口的本地模型（如 LM Studio / Ollama）
+- **配置灵活**：通过 `config.py` 自定义默认行为和 LLM 参数
+
+## 系统要求
+
+- Python 3.12+
+- 本地 LLM 服务运行于 `http://127.0.0.1:1234`
+- 模型已加载（兼容 OpenAI API 格式）
+
+## 安装
+
+1. 激活虚拟环境：
+   ```bash
+   E:/Uagent/venv/Scripts/python.exe
+   ```
+
+2. 安装依赖：
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. 确保本地 LLM 服务运行中
+
+## 使用方法
+
+### 交互式演示
+
+```bash
+python examples/demo.py
+```
+
+### 代码示例
+
+```python
+from src import QAChain
+
+chain = QAChain()
+
+# /btw 前缀 - 直接回答，无记忆
+response = chain.invoke("/btw 什么是 TCP?")
+print(response)
+
+# /base 前缀 - 使用对话上下文
+response = chain.invoke("/base 那 UDP 呢？")
+print(response)
+
+# 无前缀 - 使用默认配置行为
+response = chain.invoke("它们有什么区别？")
+print(response)
+
+# 清除对话记忆
+chain.clear_memory()
+```
+
+## 配置
+
+编辑 `src/config.py` 修改默认行为：
+
+```python
+from src.config import DefaultModeConfig, LLMConfig
+
+# 默认模式配置
+default_mode = DefaultModeConfig(
+    mode="base",  # "direct" 或 "base"
+    temperature=0.7,
+    max_tokens=1024
+)
+
+# LLM 配置 (OpenAI 兼容接口)
+llm_config = LLMConfig(
+    model="qwen3.5",
+    base_url="http://127.0.0.1:1234/v1",
+    api_key="no-key",
+    temperature=0.7,
+    max_tokens=1024
+)
+```
 
 ## 项目结构
 
 ```
-src/
-├── config.py              # 配置 dataclasses
-├── pipeline.py            # RAG 管道编排
-├── exceptions.py           # 自定义异常
-├── models/
-│   ├── llm.py            # llama-cpp-python LLM 封装
-│   └── embedding.py      # llama-cpp-python Embedding 封装
-├── indexing/
-│   ├── parser.py         # 文档解析器
-│   ├── chunker.py        # 文本分块器
-│   └── vector_index.py   # ChromaDB 索引管理器
-├── retrieval/
-│   └── hybrid_retriever.py  # 混合检索器
-├── agents/
-│   └── rag_agent.py      # RAG Agent
-└── monitoring/
-    └── memory_monitor.py # 内存监控
+E:\Uagent\
+├── src/                    # 源代码
+│   ├── __init__.py
+│   ├── config.py           # 配置管理
+│   ├── router.py          # 前缀路由解析
+│   ├── memory_manager.py   # 对话记忆管理
+│   ├── llm_service.py     # LLM 调用服务
+│   └── chain.py            # 主链编排
+├── examples/
+│   └── demo.py            # 交互式演示
+├── test/
+│   └── unit/              # 单元测试
+├── model/                  # LLM 模型文件
+├── chroma_db/            # 向量数据库
+└── README.md
 ```
 
-## 快速开始
+## 测试
 
-### 前提条件
-
-- Python 虚拟环境: `E:/Uagent/venv/Scripts/python.exe`
-- llama-cpp-python安装
-- 已部署模型:
-  - `qwen3.5:0.8b` (Chat LLM)
-  - `qwen3-embedding:4b` (Embedding)
-
-### 运行示例程序
+运行单元测试：
 
 ```bash
-# 完整示例 (索引 + 查询)
-E:/Uagent/venv/Scripts/python.exe main.py
-
-# 仅查询模式 (从已持久化索引加载)
-E:/Uagent/venv/Scripts/python.exe main.py --query
+python -m pytest test/unit/ -v
 ```
 
-
-## 运行测试
+查看覆盖率：
 
 ```bash
-# 所有单元测试
-E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/ -v
-
-# 带覆盖率
-E:/Uagent/venv/Scripts/python.exe -m pytest test/unit/ --cov=src --cov-report=term-missing
+python -m pytest test/unit/ --cov=src --cov-report=term-missing
 ```
 
-## 配置说明
+## 核心模块
 
-### RAGConfig
+| 模块 | 说明 |
+|------|------|
+| `config.py` | 全局配置管理 |
+| `router.py` | 前缀解析，`QueryParser` 识别 `/btw`、`/base` |
+| `memory_manager.py` | `MemoryManager` 使用 `ChatMessageHistory` |
+| `llm_service.py` | `LLMService` 调用 `ChatOpenAI`（OpenAI 兼容接口） |
+| `chain.py` | `QAChain` 编排路由、记忆、LLM |
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `llamacpp.model_path` | `./model/Qwen3.5-0.8B-GGUF/Qwen3.5-0.8B-Q8_0.gguf` | Chat 模型路径 |
-| `llamacpp.embedding_model_path` | `./model/Qwen3-Embedding-4B-GGUF/Qwen3-Embedding-4B-Q4_K_M.gguf` | Embedding 模型路径 |
-| `llamacpp.temperature` | `0.15` | 生成温度 |
-| `llamacpp.n_ctx` | `12288` | 上下文窗口大小 |
-| `llamacpp.max_tokens` | `2048` | 最大输出 token 数 |
-| `index.chunk_size` | `600` | 分块大小 |
-| `index.chunk_overlap` | `60` | 分块重叠 |
-| `index.persist_directory` | `./chroma_db` | ChromaDB 持久化目录 |
-| `prompt.template` | 见 `DEFAULT_PROMPT_TEMPLATE` | RAG 提示模板 |
-| `prompt.system_prompt` | `You are a helpful AI assistant.` | 系统提示词 |
-| `top_k` | `3` | 检索返回数量 |
+## License
 
-## 数据流程
-
-```
-输入文档 → Parser → Chunker → Embedding → ChromaDB
-                                              ↓
-用户问题 → Embedding → HybridRetriever → RAGAgent → ChatLlamaCpp → 答案
-```
+MIT

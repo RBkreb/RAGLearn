@@ -121,7 +121,7 @@ class VectorStoreManager:
             Chroma retriever instance.
         """
         vs = self.get_vector_store()
-        default = {"k": 4}
+        default = {"k": 3}
         if search_kwargs:
             default.update(search_kwargs)
         return vs.as_retriever(**default)

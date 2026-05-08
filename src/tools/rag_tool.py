@@ -30,7 +30,7 @@ def rag_retrieve(query: str) -> str:
     """
     if _retriever is None:
         return "Error: RAG retriever not initialized."
-    docs = _retriever.invoke(query)
+    docs = _retriever.invoke("Represent this sentence for searching relevant passages:"+query)
     if not docs:
         return "No relevant information found."
     formatted = []

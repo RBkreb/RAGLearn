@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownTextSplitter
 
 
 def chunk_documents(
@@ -20,7 +20,7 @@ def chunk_documents(
     Returns:
         List of chunk dictionaries with 'content' and 'metadata' keys.
     """
-    splitter = RecursiveCharacterTextSplitter(
+    splitter = MarkdownTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
     )

@@ -22,6 +22,7 @@ from src.llm_service import LLMService
 from src.tools.rag_tool import set_retriever
 
 
+
 def main() -> None:
     """Test RAG pipeline with LLM using rag_retrieve tool."""
     config = PipelineConfig()
@@ -44,10 +45,8 @@ def main() -> None:
 
     llm = LLMService()
     print("LLM Service initialized.")
-
     queries = [
         "什么是OSI模型",
-        "What is Quality Of Service",
     ]
 
     print("\n--- Testing LLM with RAG Tool ---")

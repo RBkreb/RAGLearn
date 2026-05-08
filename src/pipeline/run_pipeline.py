@@ -81,7 +81,7 @@ class RAGPipeline:
         )
 
         self._vector_manager.create_vector_store(
-            documents=[chunk["content"] for chunk in chunks],
+            documents=["Represent this sentence for searching relevant passages:"+chunk["content"] for chunk in chunks],
             metadatas=[chunk["metadata"] for chunk in chunks],
         )
 

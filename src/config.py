@@ -49,8 +49,9 @@ class AgentConfig(BaseModel):
     system_prompt: str = Field(
         default="""你是一个知识问答助手。
 当用户询问关于文档、规范、定义、规格等具体信息时，必须使用 rag_retrieve 工具从知识库检索相关信息。
-支持的检索：搜索文档知识库获取相关背景信息。
-优先使用 rag_retrieve 回答涉及知识、概念、定义的问题。"""
+知识库中包含一个虚构世界的设定集
+优先使用 rag_retrieve 回答涉及知识、概念、定义的问题。
+如果知识库中没有相关知识，则直接回答不知道"""
     )
     tools: list[str] = Field(
         #default=["rag_retrieve", "add", "subtract", "multiply", "divide"],
@@ -80,8 +81,8 @@ class PipelineConfig(BaseModel):
     embedding_model_path: str = Field(
         default="model/Qwen3-Embedding-4B-GGUF/Qwen3-Embedding-4B-Q4_K_M.gguf"
     )
-    chunk_size: int = Field(default=600)
-    chunk_overlap: int = Field(default=50)
+    chunk_size: int = Field(default=500)
+    chunk_overlap: int = Field(default=90)
     top_k: int = Field(default=4)
     embedding_n_ctx: int = Field(default=8192)
     embedding_n_threads: int = Field(default=4)

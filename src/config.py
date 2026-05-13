@@ -81,10 +81,10 @@ class PipelineConfig(BaseModel):
     embedding_model_path: str = Field(
         default="model/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf"
     )
-    chunk_size: int = Field(default=500)
-    chunk_overlap: int = Field(default=90)
+    chunk_size: int = Field(default=400)
+    chunk_overlap: int = Field(default=80)
     chunk_method: Literal["overlap", "line_then_overlap"] = Field(
-        default="overlap",
+        default="line_then_overlap",
         description="Chunking method: 'overlap' uses traditional overlapping chunks, "
                     "'line_then_overlap' splits by lines first then applies overlap chunking to each line",
     )

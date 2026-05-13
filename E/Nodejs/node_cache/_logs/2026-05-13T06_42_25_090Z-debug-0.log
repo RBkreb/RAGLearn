@@ -1,0 +1,93 @@
+0 verbose cli E:\Nodejs\node.exe E:\Nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.9.2
+2 info using node@v22.14.0
+3 silly config load:file:E:\Nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\m1806\.npmrc
+5 silly config load:file:E:\Uagent\E\Nodejs\node_global\etc\npmrc
+6 verbose title npm install @justprove/mobilevc
+7 verbose argv "install" "--global" "@justprove/mobilevc"
+8 verbose logfile logs-max:10 dir:E:\Uagent\E\Nodejs\node_cache\_logs\2026-05-13T06_42_25_090Z-
+9 verbose logfile E:\Uagent\E\Nodejs\node_cache\_logs\2026-05-13T06_42_25_090Z-debug-0.log
+10 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+11 silly logfile done cleaning log files
+12 silly idealTree buildDeps
+13 silly fetch manifest @justprove/mobilevc@*
+14 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc cache-miss
+15 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc 1045ms (cache miss)
+16 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc set size:undefined disposed:false
+17 silly placeDep ROOT @justprove/mobilevc@0.2.5 OK for:  want: *
+18 silly fetch manifest qrcode-terminal@^0.12.0
+19 silly packumentCache full:https://registry.npmjs.org/qrcode-terminal cache-miss
+20 silly fetch manifest @justprove/mobilevc-server-darwin-arm64@0.2.5
+21 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-arm64 cache-miss
+22 silly fetch manifest @justprove/mobilevc-server-darwin-x64@0.2.5
+23 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-x64 cache-miss
+24 silly fetch manifest @justprove/mobilevc-server-linux-arm64@0.2.5
+25 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-arm64 cache-miss
+26 silly fetch manifest @justprove/mobilevc-server-linux-x64@0.2.5
+27 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-x64 cache-miss
+28 silly fetch manifest @justprove/mobilevc-server-win32-x64@0.2.5
+29 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-win32-x64 cache-miss
+30 http fetch GET 200 https://registry.npmjs.org/qrcode-terminal 199ms (cache miss)
+31 silly packumentCache full:https://registry.npmjs.org/qrcode-terminal set size:undefined disposed:false
+32 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc-server-win32-x64 957ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-win32-x64 set size:undefined disposed:false
+34 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-x64 1052ms (cache miss)
+35 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-x64 set size:undefined disposed:false
+36 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-arm64 1270ms (cache miss)
+37 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-darwin-arm64 set size:undefined disposed:false
+38 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-arm64 1301ms (cache miss)
+39 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-arm64 set size:undefined disposed:false
+40 http fetch GET 200 https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-x64 1673ms (cache miss)
+41 silly packumentCache full:https://registry.npmjs.org/@justprove%2fmobilevc-server-linux-x64 set size:undefined disposed:false
+42 silly placeDep node_modules/@justprove/mobilevc @justprove/mobilevc-server-darwin-arm64@0.2.5 OK for: @justprove/mobilevc@0.2.5 want: 0.2.5
+43 silly placeDep node_modules/@justprove/mobilevc @justprove/mobilevc-server-darwin-x64@0.2.5 OK for: @justprove/mobilevc@0.2.5 want: 0.2.5
+44 silly placeDep node_modules/@justprove/mobilevc @justprove/mobilevc-server-linux-arm64@0.2.5 OK for: @justprove/mobilevc@0.2.5 want: 0.2.5
+45 silly placeDep node_modules/@justprove/mobilevc @justprove/mobilevc-server-linux-x64@0.2.5 OK for: @justprove/mobilevc@0.2.5 want: 0.2.5
+46 silly placeDep node_modules/@justprove/mobilevc @justprove/mobilevc-server-win32-x64@0.2.5 OK for: @justprove/mobilevc@0.2.5 want: 0.2.5
+47 silly placeDep node_modules/@justprove/mobilevc qrcode-terminal@0.12.0 OK for: @justprove/mobilevc@0.2.5 want: ^0.12.0
+48 silly reify moves {}
+49 verbose reify failed optional dependency E:\Uagent\E\Nodejs\node_global\node_modules\@justprove\mobilevc\node_modules\@justprove\mobilevc-server-linux-x64
+50 silly reify mark deleted [
+50 silly reify   'E:\\Uagent\\E\\Nodejs\\node_global\\node_modules\\@justprove\\mobilevc\\node_modules\\@justprove\\mobilevc-server-linux-x64'
+50 silly reify ]
+51 verbose reify failed optional dependency E:\Uagent\E\Nodejs\node_global\node_modules\@justprove\mobilevc\node_modules\@justprove\mobilevc-server-linux-arm64
+52 silly reify mark deleted [
+52 silly reify   'E:\\Uagent\\E\\Nodejs\\node_global\\node_modules\\@justprove\\mobilevc\\node_modules\\@justprove\\mobilevc-server-linux-arm64'
+52 silly reify ]
+53 verbose reify failed optional dependency E:\Uagent\E\Nodejs\node_global\node_modules\@justprove\mobilevc\node_modules\@justprove\mobilevc-server-darwin-x64
+54 silly reify mark deleted [
+54 silly reify   'E:\\Uagent\\E\\Nodejs\\node_global\\node_modules\\@justprove\\mobilevc\\node_modules\\@justprove\\mobilevc-server-darwin-x64'
+54 silly reify ]
+55 verbose reify failed optional dependency E:\Uagent\E\Nodejs\node_global\node_modules\@justprove\mobilevc\node_modules\@justprove\mobilevc-server-darwin-arm64
+56 silly reify mark deleted [
+56 silly reify   'E:\\Uagent\\E\\Nodejs\\node_global\\node_modules\\@justprove\\mobilevc\\node_modules\\@justprove\\mobilevc-server-darwin-arm64'
+56 silly reify ]
+57 http cache @justprove/mobilevc-server-win32-x64@https://registry.npmjs.org/@justprove/mobilevc-server-win32-x64/-/mobilevc-server-win32-x64-0.2.5.tgz 0ms (cache hit)
+58 http cache @justprove/mobilevc@https://registry.npmjs.org/@justprove/mobilevc/-/mobilevc-0.2.5.tgz 0ms (cache hit)
+59 silly tarball no local data for @justprove/mobilevc-server-win32-x64@https://registry.npmjs.org/@justprove/mobilevc-server-win32-x64/-/mobilevc-server-win32-x64-0.2.5.tgz. Extracting by manifest.
+60 silly tarball no local data for @justprove/mobilevc@https://registry.npmjs.org/@justprove/mobilevc/-/mobilevc-0.2.5.tgz. Extracting by manifest.
+61 http cache qrcode-terminal@https://registry.npmjs.org/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz 0ms (cache hit)
+62 silly tarball no local data for qrcode-terminal@https://registry.npmjs.org/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz. Extracting by manifest.
+63 http fetch GET 200 https://registry.npmjs.org/npm 2821ms
+64 http fetch GET 200 https://registry.npmjs.org/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz 468ms (cache miss)
+65 http fetch GET 200 https://registry.npmjs.org/@justprove/mobilevc/-/mobilevc-0.2.5.tgz 498ms (cache miss)
+66 http fetch GET 200 https://registry.npmjs.org/@justprove/mobilevc-server-win32-x64/-/mobilevc-server-win32-x64-0.2.5.tgz 26656ms (cache miss)
+67 silly ADD node_modules/@justprove/mobilevc
+68 silly ADD node_modules/@justprove/mobilevc/node_modules/qrcode-terminal
+69 silly ADD node_modules/@justprove/mobilevc/node_modules/@justprove/mobilevc-server-win32-x64
+70 silly ADD
+71 silly ADD
+72 silly ADD
+73 silly ADD
+74 verbose cwd E:\Uagent
+75 verbose os Windows_NT 10.0.26200
+76 verbose node v22.14.0
+77 verbose npm  v10.9.2
+78 notice
+78 notice New [31mmajor[39m version of npm available! [31m10.9.2[39m -> [34m11.14.1[39m
+78 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.14.1[39m
+78 notice To update run: [4mnpm install -g npm@11.14.1[24m
+78 notice  { force: true, [Symbol(proc-log.meta)]: true }
+79 verbose exit 0
+80 info ok

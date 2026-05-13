@@ -26,7 +26,7 @@ Standalone RAG pipeline for document embedding and retrieval:
 
 ## Common Commands
 
-**Always use venv Python**: `E:/Uagent/venv/Scripts/python.exe`
+**Always use venv Python**: `./venv/Scripts/python.exe`
 
 
 **Data Flow**: Input docs → Parser → Chunker → Embedding → ChromaDB → RAGAgent → Answer
@@ -37,8 +37,8 @@ Standalone RAG pipeline for document embedding and retrieval:
 - **80% line coverage** minimum (90% for critical modules: retrieval, agents, pipeline)
 - Tests in `test/unit/` with `test_*.py` naming
 - **Mock external dependencies** (network calls to Ollama, filesystem, ChromaDB) in unit tests
-- Use `test-specialist` subagent for test tasks per project rules
 - Integration tests should use real ChromaDB with isolated test database
+- **Test Flow**: Write implementation code and test code → hand over to `test-specialist` to execute tests and verify coverage
 
 ## Code Rules
 
@@ -49,7 +49,7 @@ Project rules in `.claude/rules/`:
 
 ## Subagents
 
-- `test-specialist` - Use for all test creation, review, and execution tasks
+- `test-specialist` - Execute and review pre-written test code (test code is written by main agent before handing over to test-specialist)
 
 ## MCP Servers
 

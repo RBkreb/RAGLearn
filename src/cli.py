@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage,SystemMessage
 from langchain_openai import ChatOpenAI
 
 from .agent.conversation_agent import ConversationAgent
@@ -109,6 +109,7 @@ class CLI:
         arg = parts[1] if len(parts) > 1 else ""
 
         if cmd == "/new":
+            self._save_current_session()
             session = self._session_manager.create_session(arg if arg else None)
             self._current_memory = ShortTermMemory(session_id=session.session_id)
             self._agent = ConversationAgent(
@@ -121,6 +122,7 @@ class CLI:
         elif cmd == "/switch":
             if not arg:
                 return "Usage: /switch <session_id>"
+            self._save_current_session()
             if self._session_manager.switch_session(arg):
                 self._current_memory = self._session_manager.load_memory(arg)
                 if self._current_memory is None:

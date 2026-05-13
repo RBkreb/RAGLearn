@@ -123,11 +123,22 @@ class ConversationAgent:
         if last_user is None:
             return None
 
-        self._memory.messages.pop()
+        # Pop the last AI message - user message will be reused
         if self._memory.messages and isinstance(self._memory.messages[-1], AIMessage):
             self._memory.messages.pop()
 
-        return self.process(last_user)
+        # Build messages WITHOUT adding duplicate user message
+        messages = self._memory.get_messages()
+
+        system_messages = [self._router.route(last_user).system_prompt]
+        all_messages: list[BaseMessage] = system_messages + messages
+
+        # Use same tools as original if applicable
+        response = self._llm(all_messages)
+        self._memory.add_ai_message(response.content)
+        self._last_response = response
+
+        return response.content
 
     def compact(self, summary: str) -> None:
         """Compact memory with summary.

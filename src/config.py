@@ -79,14 +79,19 @@ class PipelineConfig(BaseModel):
     input_dir: Path = Field(default=Path("input"))
     chroma_db_path: str = Field(default="./chroma_db")
     embedding_model_path: str = Field(
-        default="model/Qwen3-Embedding-4B-GGUF/Qwen3-Embedding-4B-Q4_K_M.gguf"
+        default="model/Qwen3-Embedding-0.6B-GGUF/Qwen3-Embedding-0.6B-Q8_0.gguf"
     )
     chunk_size: int = Field(default=500)
     chunk_overlap: int = Field(default=90)
+    chunk_method: Literal["overlap", "line_then_overlap"] = Field(
+        default="overlap",
+        description="Chunking method: 'overlap' uses traditional overlapping chunks, "
+                    "'line_then_overlap' splits by lines first then applies overlap chunking to each line",
+    )
     top_k: int = Field(default=4)
-    embedding_n_ctx: int = Field(default=8192)
+    embedding_n_ctx: int = Field(default=1024)
     embedding_n_threads: int = Field(default=4)
-    embedding_n_batch: int = Field(default=1)
+    embedding_n_batch: int = Field(default=4)
     collection_name: str = Field(default="documents")
 
 

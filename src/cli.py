@@ -112,6 +112,7 @@ class CLI:
             self._save_current_session()
             session = self._session_manager.create_session(arg if arg else None)
             self._current_memory = ShortTermMemory(session_id=session.session_id)
+            self._current_memory._session_name = session.name
             self._agent = ConversationAgent(
                 llm_callable=self._llm_call,
                 short_term_memory=self._current_memory,
@@ -123,10 +124,13 @@ class CLI:
             if not arg:
                 return "Usage: /switch <session_id>"
             self._save_current_session()
-            if self._session_manager.switch_session(arg):
-                self._current_memory = self._session_manager.load_memory(arg)
+            # Try to find session_id by name first if switch_session returns False with name
+            session_id = self._session_manager.find_session_by_name(arg) or arg
+            if self._session_manager.switch_session(session_id):
+                self._current_memory = self._session_manager.load_memory(session_id)
                 if self._current_memory is None:
-                    self._current_memory = ShortTermMemory(session_id=arg)
+                    self._current_memory = ShortTermMemory(session_id=session_id)
+                self._current_memory._session_name = self._session_manager.get_session(session_id).name if self._session_manager.get_session(session_id) else arg
                 self._agent = ConversationAgent(
                     llm_callable=self._llm_call,
                     short_term_memory=self._current_memory,

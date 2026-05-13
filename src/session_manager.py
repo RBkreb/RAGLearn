@@ -87,6 +87,20 @@ class SessionManager:
         """Get a session by ID."""
         return self.sessions.get(session_id)
 
+    def find_session_by_name(self, name: str) -> Optional[str]:
+        """Find session_id by session name.
+
+        Args:
+            name: Session name to search for.
+
+        Returns:
+            Session ID if found, None otherwise.
+        """
+        for session_id, session in self.sessions.items():
+            if session.name == name:
+                return session_id
+        return None
+
     def delete_session(self, session_id: str) -> bool:
         """Delete a session.
 

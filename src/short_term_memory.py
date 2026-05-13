@@ -18,6 +18,7 @@ class ShortTermMemory:
     messages: list[SystemMessage | HumanMessage | AIMessage] = field(default_factory=list)
     _token_count: int = 0
     _lock: threading.Lock = field(default_factory=threading.Lock)
+    _session_name: Optional[str] = None
 
     def add_user_message(self, content: str) -> None:
         """Add a user message to memory.
@@ -110,6 +111,7 @@ class ShortTermMemory:
                     for m in self.messages
                 ],
                 "token_count": self._token_count,
+                "session_name": getattr(self, '_session_name', None),
             }
             path.parent.mkdir(parents=True, exist_ok=True)
             with open(path, "w", encoding="utf-8") as f:
@@ -139,6 +141,7 @@ class ShortTermMemory:
 
         instance = cls(session_id=data["session_id"], messages=messages)
         instance._token_count = data.get("token_count", 0)
+        instance._session_name = data.get("session_name")
         return instance
 
     @property

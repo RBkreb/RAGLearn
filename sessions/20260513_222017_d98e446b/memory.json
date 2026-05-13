@@ -1,0 +1,14 @@
+{
+  "session_id": "20260513_222017_d98e446b",
+  "messages": [
+    {
+      "type": "HumanMessage",
+      "content": "你好"
+    },
+    {
+      "type": "AIMessage",
+      "content": "你好！很高兴见到你。我是你的友好 AI 助手，随时欢迎和我交流任何问题或提供帮助。有什么我可以帮你的吗？ 😊"
+    }
+  ],
+  "token_count": 13
+}

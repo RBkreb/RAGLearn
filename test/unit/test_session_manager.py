@@ -67,6 +67,13 @@ class TestSessionManager:
         result = self._manager.switch_session("nonexistent")
         assert result is False
 
+    def test_switch_session_by_name(self) -> None:
+        """Test switching to session by name."""
+        session = self._manager.create_session("my_session")
+        result = self._manager.switch_session("my_session")
+        assert result is True
+        assert self._manager.current_session_id == session.session_id
+
     def test_list_sessions(self) -> None:
         """Test listing all sessions."""
         import time

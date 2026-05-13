@@ -109,21 +109,31 @@ class SessionManager:
             return True
         return False
 
-    def switch_session(self, session_id: str) -> bool:
-        """Switch to a different session.
+    def switch_session(self, identifier: str) -> bool:
+        """Switch to a different session by ID or name.
 
         Args:
-            session_id: ID of session to switch to.
+            identifier: Session ID or name to switch to.
 
         Returns:
             True if switched, False if not found.
         """
-        if session_id in self.sessions:
-            self._current_session_id = session_id
-            session = self.sessions[session_id]
+        # Try session_id first
+        if identifier in self.sessions:
+            self._current_session_id = identifier
+            session = self.sessions[identifier]
             session.last_active = datetime.now().isoformat()
             self._save_sessions()
             return True
+
+        # Try session name
+        for session_id, session in self.sessions.items():
+            if session.name == identifier:
+                self._current_session_id = session_id
+                session.last_active = datetime.now().isoformat()
+                self._save_sessions()
+                return True
+
         return False
 
     @property

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from src.config import PipelineConfig, get_config
 from src.pipeline.document_loader import load_documents
-from src.pipeline.text_chunker import chunk_documents
+from src.pipeline.text_chunker import chunk_documents, chunk_documents_by_line_then_overlap
 from src.pipeline.embedding_service import EmbeddingService
 from src.pipeline.vector_store import VectorStoreManager
 
@@ -74,11 +74,19 @@ class RAGPipeline:
             texts.append(content)
             metadatas.append({"source": filepath})
 
-        chunks = chunk_documents(
-            texts=texts,
-            chunk_size=self._config.chunk_size,
-            chunk_overlap=self._config.chunk_overlap,
-        )
+        # Select chunking function based on config
+        if self._config.chunk_method == "line_then_overlap":
+            chunks = chunk_documents_by_line_then_overlap(
+                texts=texts,
+                chunk_size=self._config.chunk_size,
+                chunk_overlap=self._config.chunk_overlap,
+            )
+        else:
+            chunks = chunk_documents(
+                texts=texts,
+                chunk_size=self._config.chunk_size,
+                chunk_overlap=self._config.chunk_overlap,
+            )
 
         self._vector_manager.create_vector_store(
             documents=["Represent this sentence for searching relevant passages:"+chunk["content"] for chunk in chunks],

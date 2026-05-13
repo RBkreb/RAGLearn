@@ -15,7 +15,7 @@ class TestChunkDocuments:
         result = chunk_documents([])
         assert result == []
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_uses_default_chunk_size_and_overlap(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -31,7 +31,7 @@ class TestChunkDocuments:
             chunk_overlap=50,
         )
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_passes_custom_chunk_size_and_overlap(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -47,7 +47,7 @@ class TestChunkDocuments:
             chunk_overlap=100,
         )
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_returns_list_of_dicts_with_content_and_metadata(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -72,7 +72,7 @@ class TestChunkDocuments:
         assert result[1]["content"] == "Second chunk"
         assert result[1]["metadata"] == {"source": "doc1"}
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_calls_create_documents_with_texts(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -86,7 +86,7 @@ class TestChunkDocuments:
 
         mock_splitter.create_documents.assert_called_once_with(input_texts)
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_handles_single_text(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -104,7 +104,7 @@ class TestChunkDocuments:
         assert len(result) == 1
         assert result[0]["content"] == "single chunk"
 
-    @patch("src.pipeline.text_chunker.RecursiveCharacterTextSplitter")
+    @patch("src.pipeline.text_chunker.MarkdownTextSplitter")
     def test_chunk_documents_preserves_metadata_from_splitter(
         self, mock_splitter_class: MagicMock
     ) -> None:
@@ -120,3 +120,41 @@ class TestChunkDocuments:
         result = chunk_documents(["text"])
 
         assert result[0]["metadata"] == {"page": 1, "source": "document.md"}
+
+
+class TestChunkDocumentsByLineThenOverlap:
+    """Tests for chunk_documents_by_line_then_overlap function."""
+
+    def test_line_then_overlap_returns_empty_for_empty_input(self) -> None:
+        """Should return empty list when given empty text list."""
+        from src.pipeline.text_chunker import chunk_documents_by_line_then_overlap
+        result = chunk_documents_by_line_then_overlap([])
+        assert result == []
+
+    def test_line_then_overlap_splits_by_lines_first(self) -> None:
+        """Should split input text by newlines into individual line chunks."""
+        from src.pipeline.text_chunker import chunk_documents_by_line_then_overlap
+        texts = ["line1\nline2\nline3"]
+        result = chunk_documents_by_line_then_overlap(texts, line_separator="\n")
+        # Should produce 3 line chunks (each line becomes a chunk)
+        assert len(result) == 3
+
+    def test_line_then_overlap_applies_overlap_to_each_line(self) -> None:
+        """Should apply overlapping chunking to each line chunk independently."""
+        from src.pipeline.text_chunker import chunk_documents_by_line_then_overlap
+        texts = ["This is a long line that needs to be split into smaller overlapping chunks"]
+        result = chunk_documents_by_line_then_overlap(
+            texts,
+            line_separator="\n",
+            chunk_size=10,
+            chunk_overlap=3,
+        )
+        # The single line should be further split into smaller overlap chunks
+        assert all(len(chunk["content"]) <= 10 for chunk in result)
+
+    def test_line_then_overlap_preserves_source_metadata(self) -> None:
+        """Should preserve source metadata from original text."""
+        from src.pipeline.text_chunker import chunk_documents_by_line_then_overlap
+        texts = ["line content here"]
+        result = chunk_documents_by_line_then_overlap(texts)
+        assert result[0]["metadata"].get("source") is not None

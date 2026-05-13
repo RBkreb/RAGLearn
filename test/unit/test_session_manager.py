@@ -26,9 +26,10 @@ class TestSessionManager:
         assert self._manager.current_session_id == session.session_id
 
     def test_create_session_without_name(self) -> None:
-        """Test creating session without name."""
+        """Test creating session without name uses hash."""
         session = self._manager.create_session()
-        assert session.name == session.session_id
+        # Default name is hash of session_id
+        assert session.name == self._manager.hash_name(session.session_id)
 
     def test_get_session(self) -> None:
         """Test getting a session by ID."""

@@ -97,6 +97,11 @@ class ShortTermMemory:
             self.messages.clear()
             self._token_count = 0
 
+    def clear_messages_only(self) -> None:
+        """Clear only messages, preserve token count."""
+        with self._lock:
+            self.messages.clear()
+
     def save(self, path: Path) -> None:
         """Save memory to JSON file.
 

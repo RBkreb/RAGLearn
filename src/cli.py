@@ -1,14 +1,13 @@
 """CLI interface for conversation bot."""
 
-import os
-import sys
 from pathlib import Path
 from typing import Optional
 
-from langchain_core.messages import AIMessage,SystemMessage
+from langchain_core.messages import AIMessage, SystemMessage,HumanMessage
 from langchain_openai import ChatOpenAI
 
 from .agent.conversation_agent import ConversationAgent
+from .long_term_memory import LongTermMemory
 from .session_manager import SessionManager
 from .short_term_memory import ShortTermMemory
 
@@ -24,6 +23,7 @@ class CLI:
         """
         self._storage_dir = storage_dir or Path("sessions")
         self._session_manager = SessionManager(self._storage_dir)
+        self._long_term = LongTermMemory(self._storage_dir / "long_term")
         self._agent: Optional[ConversationAgent] = None
         self._current_memory: Optional[ShortTermMemory] = None
         self._setup_llm()
@@ -64,6 +64,7 @@ class CLI:
         self._agent = ConversationAgent(
             llm_callable=self._llm_call,
             short_term_memory=self._current_memory,
+            long_term_memory=self._long_term,
         )
 
     def run(self) -> None:
@@ -135,6 +136,7 @@ class CLI:
             self._agent = ConversationAgent(
                 llm_callable=self._llm_call,
                 short_term_memory=self._current_memory,
+                long_term_memory=self._long_term,
             )
             print(f"Created new session: {session.session_id}")
             return None
@@ -143,16 +145,17 @@ class CLI:
             if not arg:
                 return "Usage: /switch <session_id>"
             self._save_current_session()
-            # Try to find session_id by name first if switch_session returns False with name
             session_id = self._session_manager.find_session_by_name(arg) or arg
             if self._session_manager.switch_session(session_id):
                 self._current_memory = self._session_manager.load_memory(session_id)
                 if self._current_memory is None:
                     self._current_memory = ShortTermMemory(session_id=session_id)
-                self._current_memory._session_name = self._session_manager.get_session(session_id).name if self._session_manager.get_session(session_id) else arg
+                session_name = self._session_manager.get_session(session_id).name if self._session_manager.get_session(session_id) else arg
+                self._current_memory._session_name = session_name
                 self._agent = ConversationAgent(
                     llm_callable=self._llm_call,
                     short_term_memory=self._current_memory,
+                    long_term_memory=self._long_term,
                 )
                 return None
             return f"Session not found: {arg}"
@@ -196,6 +199,9 @@ class CLI:
                 return "Context compacted"
             return "Nothing to compact"
 
+        elif cmd == "/longterm":
+            return self._show_long_term_context()
+
         elif cmd == "/context":
             return self._get_context_usage()
 
@@ -209,7 +215,8 @@ class CLI:
                 "  /exit          - Save and exit\n"
                 "  /rewind <n>    - Rewind n pairs\n"
                 "  /repeat        - Repeat last response\n"
-                "  /compact       - Compact context\n"
+                "  /compact       - Compact context to long-term memory\n"
+                "  /longterm      - Show long-term memory context\n"
                 "  /context       - Show context usage"
             )
 
@@ -226,12 +233,21 @@ class CLI:
         conversation_text = "\n".join(
             f"{type(m).__name__}: {m.content[:100]}" for m in messages[-10:]
         )
-        prompt = f"简要总结以下对话的核心内容:\n{conversation_text}"
+        prompt = f"简要总结以下对话的核心内容:\n"
         try:
-            response = self._llm.invoke([SystemMessage(content=prompt)])
+            #print(prompt)
+            response = self._llm.invoke([SystemMessage(content=prompt),HumanMessage(content=conversation_text)])
             return response.content
         except Exception:
             return "Summary unavailable"
+
+    def _show_long_term_context(self) -> str:
+        """Show long-term memory context for current session."""
+        if self._current_memory is None or self._long_term is None:
+            return "No long-term memory available"
+        session_id = self._current_memory.session_id
+        context = self._long_term.get_context(session_id)
+        return context.content if context.content else "No long-term context"
 
     def _get_context_usage(self) -> str:
         """Get current context usage information."""
@@ -239,7 +255,9 @@ class CLI:
             return "No active session"
         tokens = self._agent.token_count
         messages = self._agent.message_count
-        return f"Tokens: ~{tokens} | Messages: {messages}"
+        lt_context = self._show_long_term_context()
+        lt_lines = lt_context.count('\n') + 1 if lt_context else 0
+        return f"Tokens: ~{tokens} | Messages: {messages} | LT entries: {lt_lines}"
 
     def _save_current_session(self) -> None:
         """Save current session memory."""

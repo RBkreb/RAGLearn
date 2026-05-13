@@ -1,11 +1,12 @@
 """Conversation agent with memory integration."""
 
-from typing import Any, Callable, Optional
+from typing import Callable, Optional
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import BaseTool
 
 from ..intent_router import Intent, IntentRouter
+from ..long_term_memory import LongTermMemory
 from ..safety_checker import SafetyChecker, SafetyResult
 from ..short_term_memory import ShortTermMemory
 from src.tools.math_tools import add, divide, multiply, subtract
@@ -18,15 +19,18 @@ class ConversationAgent:
         self,
         llm_callable: Callable[[list[BaseMessage]], AIMessage],
         short_term_memory: ShortTermMemory,
+        long_term_memory: Optional[LongTermMemory] = None,
     ) -> None:
         """Initialize conversation agent.
 
         Args:
             llm_callable: LLM function that takes messages and returns AI message.
             short_term_memory: ShortTermMemory instance for conversation history.
+            long_term_memory: Optional LongTermMemory for cross-session context.
         """
         self._llm = llm_callable
         self._memory = short_term_memory
+        self._long_term = long_term_memory
         self._router = IntentRouter()
         self._safety = SafetyChecker()
         self._tools: dict[str, BaseTool] = {
@@ -48,6 +52,35 @@ class ConversationAgent:
             SafetyResult with safety status.
         """
         return self._safety.check(user_input)
+
+    def _get_long_term_context(self) -> SystemMessage:
+        """Get long-term memory context for current session.
+
+        Returns:
+            SystemMessage with long-term memory content or empty message.
+        """
+        if self._long_term is None:
+            return SystemMessage(content="")
+        session_id = self._memory.session_id
+        return self._long_term.get_context(session_id)
+
+    def _build_system_prompt(self, intent_prompt: str) -> SystemMessage:
+        """Build combined system prompt with long-term context.
+
+        Args:
+            intent_prompt: The intent-based system prompt.
+
+        Returns:
+            Combined SystemMessage with all context.
+        """
+        parts = [intent_prompt]
+
+        # Add long-term memory context if available
+        lt_context = self._get_long_term_context()
+        if lt_context.content.strip() and lt_context.content != "无长期记忆":
+            parts.append(f"\n\n{lt_context.content}")
+
+        return SystemMessage(content="\n".join(parts))
 
     def process(self, user_input: str) -> str:
         """Process user input and return AI response.
@@ -72,8 +105,10 @@ class ConversationAgent:
 
         messages = self._memory.get_messages()
 
-        system_messages = [route_result.system_prompt]
-        all_messages: list[BaseMessage] = system_messages + messages
+        # Build single combined system prompt
+        system_prompt = self._build_system_prompt(route_result.system_prompt.content)
+
+        all_messages: list[BaseMessage] = [system_prompt] + messages
 
         if self._active_tools:
             response = self._llm_with_tools(all_messages)
@@ -130,8 +165,11 @@ class ConversationAgent:
         # Build messages WITHOUT adding duplicate user message
         messages = self._memory.get_messages()
 
-        system_messages = [self._router.route(last_user).system_prompt]
-        all_messages: list[BaseMessage] = system_messages + messages
+        # Build single combined system prompt
+        intent_prompt = self._router.route(last_user).system_prompt.content
+        system_prompt = self._build_system_prompt(intent_prompt)
+
+        all_messages: list[BaseMessage] = [system_prompt] + messages
 
         # Use same tools as original if applicable
         response = self._llm(all_messages)
@@ -140,13 +178,26 @@ class ConversationAgent:
 
         return response.content
 
-    def compact(self, summary: str) -> None:
-        """Compact memory with summary.
+    def compact(self, summary: str) -> str:
+        """Compact memory and save summary to long-term memory.
+
+        The summary is NOT stored in short-term memory messages.
+        It is saved to long-term memory and retrieved via _build_system_prompt().
 
         Args:
-            summary: Summary to replace conversation history.
+            summary: Summary to save.
+
+        Returns:
+            The summary string that was saved.
         """
-        self._memory.compact(summary)
+        # Clear short-term memory messages but keep session info
+        self._memory.clear_messages_only()
+
+        # Save to long-term memory for retrieval via _build_system_prompt
+        if self._long_term is not None:
+            self._long_term.add_summary(self._memory.session_id, summary)
+
+        return summary
 
     def get_memory(self) -> ShortTermMemory:
         """Get short-term memory instance."""

@@ -1,5 +1,6 @@
 """Session management module for multi-session support."""
 
+import hashlib
 import json
 import uuid
 from dataclasses import dataclass
@@ -72,9 +73,11 @@ class SessionManager:
         """
         session_id = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
         now = datetime.now().isoformat()
+        # Use hash of session_id as default name if no name provided
+        default_name = self.hash_name(session_id) if name is None else name
         session = Session(
             session_id=session_id,
-            name=name or session_id,
+            name=default_name,
             created_at=now,
             last_active=now,
         )
@@ -86,6 +89,35 @@ class SessionManager:
     def get_session(self, session_id: str) -> Optional[Session]:
         """Get a session by ID."""
         return self.sessions.get(session_id)
+
+    def update_session_name(self, session_id: str, name: str) -> bool:
+        """Update a session's name.
+
+        Args:
+            session_id: ID of session to update.
+            name: New name for the session.
+
+        Returns:
+            True if updated, False if not found.
+        """
+        session = self.sessions.get(session_id)
+        if session is None:
+            return False
+        session.name = name
+        self._save_sessions()
+        return True
+
+    @staticmethod
+    def hash_name(content: str) -> str:
+        """Create a short hash from content for session naming.
+
+        Args:
+            content: Content to hash.
+
+        Returns:
+            8-character hex hash string.
+        """
+        return hashlib.sha256(content.encode()).hexdigest()[:8]
 
     def find_session_by_name(self, name: str) -> Optional[str]:
         """Find session_id by session name.

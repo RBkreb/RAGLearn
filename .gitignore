@@ -9,3 +9,5 @@ build/
 TARGET.md
 model/
 .vscode/
+chroma_db/
+sessions/

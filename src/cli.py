@@ -110,7 +110,26 @@ class CLI:
 
         if cmd == "/new":
             self._save_current_session()
-            session = self._session_manager.create_session(arg if arg else None)
+            name = arg if arg else None
+            if name and self._session_manager.find_session_by_name(name):
+                print(f"会话名 '{name}' 已存在，请选择操作:")
+                print("  1. 覆盖 (删除旧会话)")
+                print("  2. 重命名")
+                print("  3. 取消")
+                choice = input("请输入选项 (1/2/3): ").strip()
+                if choice == "1":
+                    old_session_id = self._session_manager.find_session_by_name(name)
+                    if old_session_id:
+                        self._session_manager.delete_session(old_session_id)
+                elif choice == "2":
+                    name = input("请输入新名称: ").strip()
+                    if not name:
+                        return "已取消"
+                elif choice == "3":
+                    return "已取消"
+                else:
+                    return "无效选项，已取消"
+            session = self._session_manager.create_session(name)
             self._current_memory = ShortTermMemory(session_id=session.session_id)
             self._current_memory._session_name = session.name
             self._agent = ConversationAgent(
@@ -183,7 +202,7 @@ class CLI:
         elif cmd == "/help":
             return (
                 "Commands:\n"
-                "  /new <name>    - Create new session\n"
+                "  /new <name>    - Create new session (name conflict: 覆盖/重命名/取消)\n"
                 "  /switch <id>   - Switch to session\n"
                 "  /sessions      - List all sessions\n"
                 "  /delete <id>   - Delete session\n"

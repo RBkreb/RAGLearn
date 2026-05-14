@@ -13,8 +13,8 @@ class MiddlewareHooks(BaseCallbackHandler):
     def on_before_model(self, **kwargs) -> None:
         print("[Hook] before_model triggered")
 
-    def on_after_model(self, **kwargs) -> None:
-        print("[Hook] after_model triggered")
+    def on_after_model(self, response, **kwargs) -> None:
+        print(f"[Hook] after_model triggered")
 
     def on_after_agent(self, **kwargs) -> None:
         print("[Hook] after_agent triggered")

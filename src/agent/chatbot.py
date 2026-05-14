@@ -1,11 +1,13 @@
-# src/chatbot.py
-"""LangChain 对话机器人 - 最小实现"""
+# src/agent/chatbot.py
+"""Agent - 对话机器人"""
 
-from langchain_openai import ChatOpenAI
-from langchain.agents import create_agent,AgentState
+from langchain.agents import create_agent, AgentState
 from langchain.messages import HumanMessage, SystemMessage
-from .hooks import MiddlewareHooks
-from .tools import placeholder_tool
+
+from ..llm import create_llm
+from ..middleware import MiddlewareHooks
+from ..tool import placeholder_tool
+
 
 class ChatBot:
     """包含所有 middleware hooks 的对话机器人"""
@@ -21,17 +23,18 @@ class ChatBot:
             model_name: 模型名称
             base_url: LLM 服务地址
         """
-        self.model_name = model_name
-        self.base_url = base_url
-        self._llm = ChatOpenAI(
-            model=model_name,
+        from ..config.settings import Settings
+
+        settings = Settings(
+            model_name=model_name,
             base_url=base_url,
             api_key="dummy",
         )
+        self._llm = create_llm(settings)
         self._agent = create_agent(
             self._llm,
             middleware=[MiddlewareHooks()],
-            tools=[placeholder_tool]
+            tools=[placeholder_tool],
         )
 
     def chat(self, user_input: str) -> str:
@@ -43,11 +46,12 @@ class ChatBot:
         Returns:
             AI 回复内容
         """
-
-        messages = AgentState(messages=[
-            SystemMessage(content="You are a helpful assistant."),
-            HumanMessage(content=user_input),
-        ])
+        messages = AgentState(
+            messages=[
+                SystemMessage(content="You are a helpful assistant."),
+                HumanMessage(content=user_input),
+            ]
+        )
         response = self._agent.invoke(messages)
 
-        return response['messages'][-1].content
+        return response["messages"][-1].content

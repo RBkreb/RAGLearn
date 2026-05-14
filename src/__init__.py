@@ -1,6 +1,10 @@
 # src/__init__.py
-from .chatbot import ChatBot
-from .tools import placeholder_tool
-from .hooks import MiddlewareHooks
+"""LangChain 对话机器人核心模块"""
 
-__all__ = ["ChatBot", "placeholder_tool", "MiddlewareHooks"]
+from .agent import ChatBot
+from .tool import placeholder_tool
+from .middleware import MiddlewareHooks
+from .llm import create_llm
+from .config import Settings
+
+__all__ = ["ChatBot", "placeholder_tool", "MiddlewareHooks", "create_llm", "Settings"]

@@ -1,4 +1,4 @@
-# src/tools/placeholder.py
+# src/tool/placeholder.py
 """Placeholder Tool - 暂不绑定到 agent"""
 
 from langchain_core.tools import tool

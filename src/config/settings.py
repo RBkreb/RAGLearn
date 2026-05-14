@@ -12,6 +12,7 @@ class Settings:
         model_name: str = "qwen3.5-0.8b",
         base_url: str = "http://127.0.0.1:1234/v1",
         api_key: str = "dummy",
+        prompt: str = "You are a helpfu assistant"
     ) -> None:
         """初始化配置。
 
@@ -23,6 +24,7 @@ class Settings:
         self.model_name = model_name
         self.base_url = base_url
         self.api_key = api_key
+        self.prompt = prompt
 
 
 DEFAULT_SETTINGS = Settings()

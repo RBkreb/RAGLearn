@@ -1,7 +1,7 @@
 # src/main.py
 """LangChain 对话机器人入口"""
 
-from .chatbot import ChatBot
+from src.chatbot import ChatBot
 
 
 def main(user_input: str) -> str:

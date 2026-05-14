@@ -2,10 +2,10 @@
 """LangChain 对话机器人 - 最小实现"""
 
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage
-
+from langchain.agents import create_agent,AgentState
+from langchain.messages import HumanMessage, SystemMessage
 from .hooks import MiddlewareHooks
-
+from .tools import placeholder_tool
 
 class ChatBot:
     """包含所有 middleware hooks 的对话机器人"""
@@ -13,7 +13,7 @@ class ChatBot:
     def __init__(
         self,
         model_name: str = "qwen3.5-0.8b",
-        base_url: str = "http://127.0.0.1:1234",
+        base_url: str = "http://127.0.0.1:1234/v1",
     ) -> None:
         """初始化 ChatBot。
 
@@ -23,12 +23,15 @@ class ChatBot:
         """
         self.model_name = model_name
         self.base_url = base_url
-        self._hooks = MiddlewareHooks()
         self._llm = ChatOpenAI(
             model=model_name,
             base_url=base_url,
             api_key="dummy",
-            callbacks=[self._hooks],
+        )
+        self._agent = create_agent(
+            self._llm,
+            middleware=[MiddlewareHooks()],
+            tools=[placeholder_tool]
         )
 
     def chat(self, user_input: str) -> str:
@@ -40,16 +43,11 @@ class ChatBot:
         Returns:
             AI 回复内容
         """
-        self._hooks.on_before_agent()
-        self._hooks.on_before_model()
 
-        messages = [
+        messages = AgentState(messages=[
             SystemMessage(content="You are a helpful assistant."),
             HumanMessage(content=user_input),
-        ]
-        response = self._llm.invoke(messages)
+        ])
+        response = self._agent.invoke(messages)
 
-        self._hooks.on_after_model(response)
-        self._hooks.on_after_agent()
-
-        return response.content
+        return response['messages'][-1].content

@@ -2,7 +2,7 @@
 """LangChain 对话机器人 - 最小实现"""
 
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from .hooks import MiddlewareHooks
 
@@ -12,7 +12,7 @@ class ChatBot:
 
     def __init__(
         self,
-        model_name: str = "gpt-4",
+        model_name: str = "qwen3.5-0.8b",
         base_url: str = "http://127.0.0.1:1234",
     ) -> None:
         """初始化 ChatBot。
@@ -43,7 +43,10 @@ class ChatBot:
         self._hooks.on_before_agent()
         self._hooks.on_before_model()
 
-        messages = [HumanMessage(content=user_input)]
+        messages = [
+            SystemMessage(content="You are a helpful assistant."),
+            HumanMessage(content=user_input),
+        ]
         response = self._llm.invoke(messages)
 
         self._hooks.on_after_model(response)

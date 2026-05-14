@@ -7,7 +7,7 @@ from src.chatbot import ChatBot
 def test_chatbot_initialization():
     """验证 ChatBot 正确初始化"""
     chatbot = ChatBot()
-    assert chatbot.model_name == "gpt-4"
+    assert chatbot.model_name == "qwen3.5-0.8b"
     assert chatbot.base_url == "http://127.0.0.1:1234"
 
 

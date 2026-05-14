@@ -15,7 +15,7 @@ def test_hooks_print_output(capsys):
     captured = capsys.readouterr()
     assert "[Hook] before_model triggered" in captured.out
 
-    hooks.on_after_model()
+    hooks.on_after_model(response="test")
     captured = capsys.readouterr()
     assert "[Hook] after_model triggered" in captured.out
 

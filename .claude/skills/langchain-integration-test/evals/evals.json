@@ -1,0 +1,38 @@
+{
+  "skill_name": "langchain-integration-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write integration tests for a LangChain agent that uses the OpenAI_functions agent type. Include a test that verifies tool calling behavior with a real LLM.",
+      "expected_output": "Integration test file with @pytest.mark.integration, API key check fixture, and structural assertions",
+      "expectations": [
+        "Uses @pytest.mark.integration decorator",
+        "Checks for OPENAI_API_KEY environment variable",
+        "Asserts on tool call names, not exact output text",
+        "Uses smaller model like gemini-3.1-flash-lite-preview for cost efficiency"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add integration tests for a RetrievalQA chain that uses a Chroma vector store. Write tests that verify the chain correctly retrieves and answers questions.",
+      "expected_output": "Integration test class with conftest.py setup for API keys and pytest markers",
+      "expectations": [
+        "Marks tests with @pytest.mark.integration",
+        "Uses conftest.py with check_api_keys fixture",
+        "Asserts on response structure (has messages, correct types)",
+        "Loads API keys from environment or .env"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up VCR recording for integration tests in a LangChain project. Show the conftest.py configuration and a sample test with @pytest.mark.vcr decorator.",
+      "expected_output": "conftest.py with vcr_config fixture and example test using @pytest.mark.vcr",
+      "expectations": [
+        "vcr_config filters authorization and api_key headers",
+        "Test decorated with @pytest.mark.vcr",
+        "Test asserts on tool call structure, not exact content",
+        "Shows --record-mode=once configuration"
+      ]
+    }
+  ]
+}

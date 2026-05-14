@@ -1,0 +1,35 @@
+{
+  "skill_name": "langchain-unit-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write unit tests for a ConversationalRetrievalChain that uses a vector store. Mock the LLM and vector store so tests run without API calls.",
+      "expected_output": "A test file with GenericFakeChatModel for LLM mocking and mocked similarity_search for vector store",
+      "expectations": [
+        "Uses GenericFakeChatModel from langchain_core.language_models.fake_chat_models",
+        "Mocks vector store similarity_search method",
+        "Tests that the chain returns a proper response structure"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add unit tests for a ConversationBufferMemory component. Test that save_context and load_memory_variables work correctly.",
+      "expected_output": "Test file testing memory save/load with assertions on history content",
+      "expectations": [
+        "Tests save_context with input/output pairs",
+        "Tests load_memory_variables returns correct history",
+        "Uses assert 'specific text' in history"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write unit tests for a ReAct agent that uses two tools: search_documents and calculate. Mock the LLM to return specific tool calls in sequence.",
+      "expected_output": "Test class with multiple test methods, using GenericFakeChatModel with tool call sequences",
+      "expectations": [
+        "Uses GenericFakeChatModel with AIMessage containing tool_calls",
+        "Tests that correct tool is selected based on query",
+        "Tests multi-turn interaction with InMemorySaver checkpointer"
+      ]
+    }
+  ]
+}

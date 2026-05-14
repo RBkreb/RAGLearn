@@ -1,21 +1,21 @@
 # src/hooks/middleware.py
 """LangChain Middleware Hooks - 占位符实现"""
 
-from langchain.agents.middleware import AgentMiddleware,ModelRequest,ToolCallRequest
+from langchain.agents.middleware import AgentMiddleware,ModelRequest,ToolCallRequest,AgentState
 
 class MiddlewareHooks(AgentMiddleware):
     """包含所有 LangChain hooks 的占位符实现，每个 hook 触发时打印日志"""
     
-    def before_agent(self,state):
+    def before_agent(self,state:AgentState):
         print("[Hook] before_agent triggered")
 
-    def before_model(self,state):
+    def before_model(self,state:AgentState):
         print("[Hook] before_model triggered")
 
-    def after_model(self,state):
+    def after_model(self,state:AgentState):
         print(f"[Hook] after_model triggered")
 
-    def after_agent(self,state):
+    def after_agent(self,state:AgentState):
         print("[Hook] after_agent triggered")
 
     def wrap_model_call(self,request:ModelRequest,handler):

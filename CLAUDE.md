@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Q&A bot built with LangChain and OpenAI-compatible interface. Supports prefix routing and conversation memory for answering user questions via local LLMs.
+A RAG system built with LangChain and OpenAI-compatible interface. Supports BM25 and embedding retriever to get the answer.
 
 ## Prerequisites
 

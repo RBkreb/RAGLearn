@@ -12,3 +12,4 @@ model/
 sessions/
 E/
 docs/
+chroma_db/

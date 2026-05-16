@@ -166,6 +166,9 @@ class BM25Retriever:
         loaded_retriever = BM25.load(path)
         retriever._retriever = loaded_retriever
 
+        # bm25s BM25.load does not restore corpus, set it manually
+        retriever._retriever.corpus = retriever._corpus
+
         return retriever
 
     def retrieve(

@@ -7,9 +7,10 @@ __pycache__/
 dist/
 build/
 TARGET.md
-model/
+/model/
 .vscode/
 sessions/
 E/
 docs/
 chroma_db/
+inputs/

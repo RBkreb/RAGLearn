@@ -1,7 +1,10 @@
 from src.pipeline.pipe import Pipeline
 
-def main(filepath):
-	PP=Pipeline()
-	PP.execute(filepath)
-if __name__=="__main__":
-	main("inputs/documents.txt")
+
+def main(directory_path: str = "./inputs"):
+    PP = Pipeline()
+    PP.execute(directory_path)
+
+
+if __name__ == "__main__":
+    main()

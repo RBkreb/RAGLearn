@@ -59,9 +59,11 @@ class LineSplitter:
         lines = content.split("\n")
 
         for line_idx, line in enumerate(lines):
-            if not line.strip():
+            stripped = line.strip()
+            if not stripped or "正文：" not in stripped:
                 continue
-            sub_chunks = self._text_splitter.split_text(line)
+            body = stripped.split("正文：", 1)[1]
+            sub_chunks = self._text_splitter.split_text(body)
             for sub_idx, sub_chunk in enumerate(sub_chunks):
                 chunk_hash = compute_hash(sub_chunk)
                 metadata = {

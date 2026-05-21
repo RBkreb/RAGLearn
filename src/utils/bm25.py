@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 import jieba
 from bm25s import BM25
 from bm25s.tokenization import Tokenized
-from langchain_core.documents import Document
 from chromadb import Collection
 if TYPE_CHECKING:
     from langchain_chroma import Chroma
@@ -109,11 +108,17 @@ class BM25Retriever:
         if client is None:
             raise ValueError("No ChromaDB client provided")
 
-        #collection_nm = collection_name if collection_name is not None else self._collection_name
-        collection:Collection = client._collection
-
-        docs:Document = collection.get()
-        self._corpus = docs["documents"]
+        collection: Collection = client._collection
+        batch_size = 1000
+        self._corpus = []
+        offset = 0
+        while True:
+            batch = collection.get(limit=batch_size, offset=offset)
+            batch_docs = batch["documents"]
+            if not batch_docs:
+                break
+            self._corpus.extend(batch_docs)
+            offset += len(batch_docs)
         self.index()
 
     def save(self, path: str) -> None:

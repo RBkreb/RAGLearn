@@ -16,3 +16,5 @@ chroma_db/
 inputs/
 graphify-out/
 ref/
+.hermes/
+eval_results/

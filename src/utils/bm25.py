@@ -2,52 +2,12 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-import jieba
-from bm25s import BM25
-from bm25s.tokenization import Tokenized
+from bm25s import BM25, tokenize
 from chromadb import Collection
 if TYPE_CHECKING:
     from langchain_chroma import Chroma
-
-
-def tokenize(
-    texts: str | list[str],
-    return_ids: bool = True,
-    show_progress: bool = False,
-) -> Tokenized:
-    """Tokenize texts using jieba Chinese segmentation.
-
-    Args:
-        texts: Single text or list of texts.
-        return_ids: If True, return token IDs; otherwise return token strings.
-        show_progress: Show progress bar.
-
-    Returns:
-        Tokenized object with corpus IDs and vocabulary.
-    """
-    if isinstance(texts, str):
-        texts = [texts]
-
-    corpus_ids: list[list[int]] = []
-    token_to_index: dict[str, int] = {}
-
-    for text in texts:
-        tokens = jieba.lcut(text)
-        doc_ids: list[int] = []
-
-        for token in tokens:
-            if token not in token_to_index:
-                token_to_index[token] = len(token_to_index)
-            doc_ids.append(token_to_index[token])
-
-        corpus_ids.append(doc_ids)
-
-    return Tokenized(ids=corpus_ids, vocab=token_to_index)
-
-
-BM25.tokenize = tokenize  # type: ignore[attr-defined]
 
 
 class BM25Retriever:
@@ -96,13 +56,11 @@ class BM25Retriever:
     def index_from_chroma(
         self,
         chroma_client: Chroma | None = None,
-        #collection_name: str | None = None,
     ) -> None:
         """Build BM25 index from ChromaDB collection.
 
         Args:
             chroma_client: ChromaDB client. Uses stored client if None.
-            collection_name: Collection name. Uses stored name if None.
         """
         client = chroma_client if chroma_client is not None else self._chroma_client
         if client is None:

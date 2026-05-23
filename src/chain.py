@@ -31,9 +31,10 @@ class chain_pipeline:
             self._llm,
             response_format=answerF
         )
+        
         self._crossencoder=HuggingFaceCrossEncoder(model_name="Qwen/Qwen3-Reranker-0.6B",model_kwargs={"device": "cpu","local_files_only":True})
         self._cereranker=CrossEncoderReranker(model=self._crossencoder,top_n=3)
-    def _rerank(self, bm25_results: list[tuple[str, float]], hyde_results: list[tuple[Document, float]], k: int = 3) -> list[Document]:
+    def _rerank(self, bm25_results: list[tuple[str, float]], hyde_results: list[tuple[Document, float]], k: int = 3,RRF_K:int=60,weight_Embed:float=0.4) -> list[Document]:
         """RRF reranking: combine BM25 and vector results using Reciprocal Rank Fusion.
 
         Uses true RRF formula: RRF(d) = Σ 1/(K + rank_i(d))
@@ -43,30 +44,29 @@ class chain_pipeline:
         """
         if not bm25_results and not hyde_results:
             return []
-
-        RRF_K = 60
+        weight_bm25=1-weight_Embed
         rrf_scores: dict[str, float] = {}
 
         # BM25 ranks (sorted by score desc already)
         for rank, (content, _) in enumerate(bm25_results):
-            rrf = 1.0 / (RRF_K + rank + 1)
+            rrf = weight_bm25 * 1.0 / (RRF_K + rank + 1) 
             rrf_scores[content] = rrf_scores.get(content, 0.0) + rrf
 
         # Vector ranks (sorted by distance asc already)
         for rank, (doc, _) in enumerate(hyde_results):
             content = doc.page_content
-            rrf = 1.0 / (RRF_K + rank + 1)
+            rrf = weight_Embed * 1.0 / (RRF_K + rank + 1)
             rrf_scores[content] = rrf_scores.get(content, 0.0) + rrf
 
         reranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
         return [Document(page_content=content) for content, _ in reranked[:k]]
 
-    def search(self, keywords: list[str], HyDEdocuments: str,query:str,k:int=10):
+    def search(self, keywords: list[str], HyDEdocuments: str,query:str,k:int=3):
         """Search documents using BM25 + Chroma hybrid retrieval."""
         # 1. BM25 multi-keyword aggregation, keep highest score
         all_docs: dict[str, float] = {}
         for keyword in keywords:
-            docs, scores = self._bm25.retrieve(keyword, k=10)
+            docs, scores = self._bm25.retrieve(keyword, k=(10+k)//len(keywords))
             for doc, score in zip(docs, scores):
                 if doc not in all_docs or all_docs[doc] < score:
                     all_docs[doc] = score
@@ -83,11 +83,12 @@ class chain_pipeline:
                 bm25_res.append((doc_content, bm25_score))
 
         # 3. HyDE vector search
-        hyde_res: list[tuple[Document, float]] = self._vs.similarity_search_with_score(HyDEdocuments, k=10)
+        hyde_res: list[tuple[Document, float]] = self._vs.similarity_search_with_score(HyDEdocuments, k=10+k)
 
         # 4. RRF reranking
-        RRF_docs = self._rerank(bm25_res, hyde_res, k=k)
+        RRF_docs = self._rerank(bm25_res, hyde_res, k=7+k)
         # 5. CrossEncoder reranking
+        self._cereranker.top_n=k
         final_docs=self._cereranker.compress_documents(RRF_docs,query)
         context = "context:\n".join([doc.page_content for doc in final_docs])
         return context
@@ -97,12 +98,12 @@ class chain_pipeline:
         for attempt in range(max_retry):
             try:
                 hyde_prompt=AgentState(messages=[SystemMessage(content=LlmConfig.HYDE_PROMPT),HumanMessage(content=query)])
-
+                self._llm.temperature=0.8
                 hyde_res:schemaF=self._HyDE_agent.invoke(hyde_prompt)["structured_response"]
                 #print(hyde_res.keywords)
-                search_res=self.search(hyde_res.keywords,hyde_res.documents,query,k=k)
+                search_res=self.search(hyde_res.keywords,hyde_res.documents,query,k=k+attempt)
                 answer_prompt=AgentState(messages=[SystemMessage(LlmConfig.ANSWER_PROMPT+search_res),HumanMessage(query)])
-
+                self._llm.temperature=0.1
                 answer:answerF=self._agent.invoke(answer_prompt)["structured_response"]
                 if answer.availabe:
                     break

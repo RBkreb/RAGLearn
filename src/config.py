@@ -3,7 +3,7 @@ from dataclasses import dataclass
 @dataclass
 class EmbedModelConfig:
     """Configuration for embedding models."""
-    model_name:str="text-embedding-nomic-embed-text-v1.5"
+    model_name:str="text-embedding-qwen3-embedding-0.6b"
     base_url:str="http://127.0.0.1:1234/v1"
     api_key:str="nokey"
     n_ctx: int = 1024

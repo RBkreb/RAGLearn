@@ -18,3 +18,5 @@ graphify-out/
 ref/
 .hermes/
 eval_results/
+.agents/
+.deepeval/

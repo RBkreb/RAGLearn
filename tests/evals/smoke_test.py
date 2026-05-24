@@ -26,7 +26,7 @@ from metrics import SINGLE_TURN_NO_TRACING_METRICS
 # ── Load 1st golden ──
 dataset = EvaluationDataset()
 dataset.add_goldens_from_json_file(file_path="eval_results/.dataset.json")
-golden = dataset.goldens[0]
+golden = dataset.goldens[2]
 
 # ── Run chain ──
 print("Running chain...", flush=True)

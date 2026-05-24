@@ -4,8 +4,11 @@ sys.path.insert(0, r'E:\Uagent')
 
 from src.chain import chain_pipeline
 
-N_SAMPLE = 100
-K_RETRIEVAL = 3
+N_SAMPLE = 140          #QA数
+K_RETRIEVAL = 3         #检索K
+THESHOLD = 0.8         #最大相似度阈值
+GAP_THRESHOLD=0.3       #最大相似度-平均相似度 差阈值
+MAX_RETRY=3             #最大重试
 
 # ── Load QA pairs ──
 print(f"Loading qa_pairs.jsonl ...")
@@ -33,34 +36,32 @@ for i, qa in enumerate(qa_pairs):
     reference = qa["answer"]
     
     t_q = time.time()
-    try:
-        answer, contexts = chain.execute(question, k=K_RETRIEVAL)
-        t_elapsed = time.time() - t_q
-        
-        # Check if answer contains reference
-        ref_lower = reference.strip().lower()
-        ans_lower = answer.answer.lower()
-        if answer.answer=='':
-            answer.answer="can't answer"
-        exact_match = ref_lower in ans_lower
-        goldens.append(
-            {
-                "input":question,
-                "actual_output":answer.answer,
-                "expected_output":reference,
-                "retrieval_context":contexts
-            }
-        )
+    #try:
+    answer, contexts = chain.execute(question, k=K_RETRIEVAL,threshold=THESHOLD,gap_threshold=GAP_THRESHOLD,max_retry=MAX_RETRY)
+    t_elapsed = time.time() - t_q
+    
+    # Check if answer contains reference
+    ref_lower = reference.strip().lower()
+    ans_lower = answer.lower()
+    exact_match = ref_lower in ans_lower
+    goldens.append(
+        {
+            "input":question,
+            "actual_output":answer,
+            "expected_output":reference,
+            "retrieval_context":contexts
+        }
+    )
 
-        if exact_match:
-            oks+=1
-            emoji="✓"
-        else:
-            emoji="✗"
-        print(f"  [{i+1}/{len(qa_pairs)}] {emoji} {t_elapsed:.1f}s | Q: {question[:50]}...")
+    if exact_match:
+        oks+=1
+        emoji="✓"
+    else:
+        emoji="✗"
+    print(f"  [{i+1}/{len(qa_pairs)}] {emoji} {t_elapsed:.1f}s | Q: {question[:50]}...")
         
-    except Exception as e:
-        print(f"  [{i+1}] FAILED: {e}")
+    #except Exception as e:
+        #print(f"  [{i+1}] FAILED: {e}")
 
 t_chain = time.time() - t_start
 

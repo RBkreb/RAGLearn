@@ -20,3 +20,4 @@ ref/
 eval_results/
 .agents/
 .deepeval/
+.codegraph/

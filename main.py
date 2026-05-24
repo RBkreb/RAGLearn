@@ -6,9 +6,10 @@ from src.chain import chain_pipeline
 
 N_SAMPLE = 140          #QA数
 K_RETRIEVAL = 3         #检索K
-THESHOLD = 0.8         #最大相似度阈值
+THESHOLD = 0.8          #最大相似度阈值
 GAP_THRESHOLD=0.3       #最大相似度-平均相似度 差阈值
 MAX_RETRY=3             #最大重试
+EMBED_WEIGHT=0.5        #向量检索在RRF排序中的权重
 
 # ── Load QA pairs ──
 print(f"Loading qa_pairs.jsonl ...")
@@ -37,7 +38,7 @@ for i, qa in enumerate(qa_pairs):
     
     t_q = time.time()
     #try:
-    answer, contexts = chain.execute(question, k=K_RETRIEVAL,threshold=THESHOLD,gap_threshold=GAP_THRESHOLD,max_retry=MAX_RETRY)
+    answer, contexts = chain.execute(question, k=K_RETRIEVAL,threshold=THESHOLD,gap_threshold=GAP_THRESHOLD,max_retry=MAX_RETRY,weight=EMBED_WEIGHT)
     t_elapsed = time.time() - t_q
     
     # Check if answer contains reference

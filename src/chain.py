@@ -80,7 +80,7 @@ class chain_pipeline:
         reranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
         return [Document(page_content=content) for content, _ in reranked[:k]]
 
-    def search(self,query:str,k:int=3,threshold:float=0.75,gap_threshold=0.3,retry:int=3):
+    def search(self,query:str,k:int=3,threshold:float=0.75,gap_threshold=0.3,retry:int=3,weight:float=0.5):
         """Search documents using BM25 + Chroma hybrid retrieval."""
         for attempt in range(retry):
             hyde_prompt=AgentState(messages=[SystemMessage(content=HyDEConfig.HYDE_PROMPT),HumanMessage(content=query)])
@@ -110,7 +110,7 @@ class chain_pipeline:
             hyde_res: list[tuple[Document, float]] = self._vs.similarity_search_with_score(HyDEdocuments, k=10+k+attempt)
 
             # 4. RRF reranking
-            RRF_docs = self._rerank(bm25_res, hyde_res, k=7+k+attempt)
+            RRF_docs = self._rerank(bm25_res, hyde_res, k=7+k+attempt,weight_Embed=weight)
             # 5. CrossEncoder reranking
             self._cereranker.top_n=k+attempt
             results=self._cereranker.compress_documents(RRF_docs,query)
@@ -128,12 +128,12 @@ class chain_pipeline:
                 return context
         context = "context:\n".join([doc[0].page_content for doc in results[:k]])
         return context
-    def execute(self,query:str,k:int=3,max_retry:int=3,threshold:float=0.75,gap_threshold=0.3):
+    def execute(self,query:str,k:int=3,max_retry:int=3,threshold:float=0.75,gap_threshold:float=0.3,weight:float=0.5):
         import time as _time
         
         try:
             #print(hyde_res.keywords)
-            search_res=self.search(query,k=k,retry=max_retry,threshold=threshold,gap_threshold=gap_threshold)
+            search_res=self.search(query,k=k,retry=max_retry,threshold=threshold,gap_threshold=gap_threshold,weight=weight)
             answer_prompt=AgentState(messages=[SystemMessage(RAGConfig.ANSWER_PROMPT+search_res),HumanMessage(content=query)])
             answer=self._agent.invoke(answer_prompt)["messages"][-1].content
             

@@ -84,21 +84,34 @@ class TestBM25Retriever:
 
     @patch("src.utils.bm25.BM25")
     def test_index_from_chroma(self, mock_bm25: MagicMock) -> None:
-        """Test indexing from ChromaDB collection."""
-        mock_collection = MagicMock()
-        mock_collection.get.return_value = {
-            "documents": ["今天天气晴朗", "小明和小红一起上学"]
-        }
+        """Test indexing from ChromaDB collection with offset pagination.
+
+        The retriever pages through ``client.get(limit=..., offset=...)`` until a
+        short batch arrives, so the fake must honour limit/offset or the loop
+        never terminates.
+        """
+        docs = ["今天天气晴朗", "小明和小红一起上学"]
+
+        def fake_get(ids=None, limit=None, offset=0, **kwargs) -> dict:
+            start = offset or 0
+            end = start + limit if limit is not None else None
+            page = docs[start:end]
+            return {
+                "ids": [str(i) for i in range(start, start + len(page))],
+                "documents": page,
+                "metadatas": [{} for _ in page],
+            }
 
         mock_chroma = MagicMock()
-        mock_chroma.get_collection.return_value = mock_collection
+        mock_chroma.get.side_effect = fake_get
 
         retriever = BM25Retriever()
         retriever.set_chroma(mock_chroma, "test_collection")
         retriever.index_from_chroma()
 
-        mock_chroma.get_collection.assert_called_once_with("test_collection")
-        assert retriever._corpus == ["今天天气晴朗", "小明和小红一起上学"]
+        # Pagination must have been driven through the public get() API.
+        assert mock_chroma.get.call_count >= 2
+        assert retriever._corpus == docs
 
     def test_index_from_chroma_no_client_raises(self) -> None:
         """Test index_from_chroma without client raises error."""

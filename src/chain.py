@@ -10,6 +10,7 @@ from langchain_classic.retrievers.document_compressors import CrossEncoderRerank
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 from src.config import HyDEConfig,RAGConfig
 from dataclasses import dataclass
+import math
 from typing_extensions import override
 from operator import itemgetter
 from collections.abc import Sequence
@@ -23,6 +24,19 @@ class answerF(BaseModel):
     answer:str=Field(description="answer")
     availabe:bool=Field(description="mark of answered")
 
+
+def normalize_score(logit: float) -> float:
+    """Squash a reranker score into (0, 1) with the logistic function.
+
+    Cross-encoders backed by a causal LM (Qwen3-Reranker's LogitScore head)
+    emit the raw log-odds logit[true] - logit[false], which is unbounded; the
+    threshold logic in chain_pipeline.search compares against probabilities,
+    so the scores must be mapped into the same space first. The input is
+    clamped to avoid overflow in exp() for extreme logits.
+    """
+    return 1.0 / (1.0 + math.exp(-max(-60.0, min(60.0, logit))))
+
+
 class CEReranker(CrossEncoderReranker):
     @override
     def compress_documents( 
@@ -31,10 +45,15 @@ class CEReranker(CrossEncoderReranker):
         query: str,
         callbacks: Callbacks | None = None,
     ) -> list[tuple[Document,float]]:
-        scores = self.model.score([(query, doc.page_content) for doc in documents])
-        docs_with_scores = list(zip(documents, scores, strict=False))
+        if not documents:
+            return []
+        raw_scores = self.model.score([(query, doc.page_content) for doc in documents])
+        docs_with_scores = [
+            (doc, normalize_score(score))
+            for doc, score in zip(documents, raw_scores, strict=False)
+        ]
         result = sorted(docs_with_scores, key=itemgetter(1), reverse=True)
-        return result
+        return result[: self.top_n]
 
 class chain_pipeline:
     def __init__(self):
@@ -82,6 +101,7 @@ class chain_pipeline:
 
     def search(self,query:str,k:int=3,threshold:float=0.75,gap_threshold=0.3,retry:int=3,weight:float=0.5):
         """Search documents using BM25 + Chroma hybrid retrieval."""
+        results: list[tuple[Document, float]] = []
         for attempt in range(retry):
             hyde_prompt=AgentState(messages=[SystemMessage(content=HyDEConfig.HYDE_PROMPT),HumanMessage(content=query)])
             hyde_mes:schemaF=self._HyDE_agent.invoke(hyde_prompt)["structured_response"]
@@ -111,21 +131,27 @@ class chain_pipeline:
 
             # 4. RRF reranking
             RRF_docs = self._rerank(bm25_res, hyde_res, k=7+k+attempt,weight_Embed=weight)
-            # 5. CrossEncoder reranking
+            # 5. CrossEncoder reranking (scores already normalized to 0-1)
             self._cereranker.top_n=k+attempt
             results=self._cereranker.compress_documents(RRF_docs,query)
+            if not results:
+                continue
 
             #单强 or 多强
             max=results[0][1]
-            avg=sum(result[1] for result in results)/(k+attempt)
-            mid=results[(k+attempt)//2][1]
+            avg=sum(result[1] for result in results)/len(results)
+            mid=results[len(results)//2][1]
             gap=max-avg
             if max>threshold:
                 if gap>gap_threshold:
                     context = "context:\n"+results[0][0].page_content
-                elif avg>threshold-0.1 or mid>threshold-0.1:
+                    return context
+                if avg>threshold-0.1 or mid>threshold-0.1:
                     context = "context:\n".join([doc[0].page_content for doc in results[:k]])
-                return context
+                    return context
+                # head is neither dominant nor backed by the rest: widen the net and retry
+        if not results:
+            return ""
         context = "context:\n".join([doc[0].page_content for doc in results[:k]])
         return context
     def execute(self,query:str,k:int=3,max_retry:int=3,threshold:float=0.75,gap_threshold:float=0.3,weight:float=0.5):

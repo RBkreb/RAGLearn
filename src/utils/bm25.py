@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from bm25s import BM25, tokenize
-from chromadb import Collection
 if TYPE_CHECKING:
     from langchain_chroma import Chroma
 
@@ -66,12 +65,11 @@ class BM25Retriever:
         if client is None:
             raise ValueError("No ChromaDB client provided")
 
-        collection: Collection = client._collection
         batch_size = 1000
         self._corpus = []
         offset = 0
         while True:
-            batch = collection.get(limit=batch_size, offset=offset)
+            batch = client.get(limit=batch_size, offset=offset, include=["documents"])
             batch_docs = batch["documents"]
             if not batch_docs:
                 break
